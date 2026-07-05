@@ -1,0 +1,50 @@
+---
+- hosts: servers
+  become: yes
+
+  tasks:
+    - name: update apt 
+      apt:
+        update_cache: yes
+   
+    - name: install docker 
+      apt:
+        name: docker.io
+        state: present
+
+    - name: start docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Pull jenkins image
+      docker_image:
+        name: jenkins/jenkins:lts
+        source: pull
+
+    - name: pull tomcat image
+      docker_image:
+        name: tomcat:9
+        source: pull
+
+    - name: run jenkins container
+      docker_container:
+        name: jenkins
+        image: jenkins/jenkins:lts
+        state: started
+        restart_policy: always
+        ports:
+          - "8081:8080"
+          - "50000:50000"  
+
+    - name: run tomcat container
+      docker_container:
+        name: tomcat
+        image: tomcat:9
+        state: started
+        restart_policy: always
+        ports:
+          - "8080:8080"
+
+  
